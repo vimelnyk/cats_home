@@ -239,7 +239,7 @@ class ET_Core_Data_Utils {
 		$value  = $array;
 
 		foreach ( $keys as $key ) {
-			if ( '[' === $key[0] ) {
+			if ( ! empty( $key ) && isset( $key[0] ) && '[' === $key[0] ) {
 				$index = substr( $key, 1, -1 );
 
 				if ( is_numeric( $index ) ) {
@@ -359,6 +359,26 @@ class ET_Core_Data_Utils {
 		$this->array_set( $array, $path, array_merge( $current_value, $value ) );
 	}
 
+	/**
+	 * Whether or not a string ends with a substring.
+	 *
+	 * @since 4.5.3
+	 *
+	 * @param string $haystack The string to look in.
+	 * @param string $needle   The string to look for.
+	 *
+	 * @return bool
+	 */
+	public function ends_with( $haystack, $needle ) {
+		$length = strlen( $needle );
+
+		if ( 0 === $length ) {
+			return true;
+		}
+
+		return ( substr( $haystack, -$length ) === $needle );
+	}
+
 	public function ensure_directory_exists( $path ) {
 		if ( file_exists( $path ) ) {
 			return is_dir( $path );
@@ -460,12 +480,16 @@ class ET_Core_Data_Utils {
 	/**
 	 * Disable XML entity loader.
 	 *
+	 * @since 4.7.5 Don't execute deprecated `libxml_disable_entity_loader()` on PHP 8.0.
+	 *
 	 * @param bool $disable
 	 *
 	 * @return void
 	 */
 	public function libxml_disable_entity_loader( $disable ) {
-		if ( function_exists( 'libxml_disable_entity_loader' ) ) {
+		// The `libxml_disable_entity_loader()` method is deprecated since PHP 8.0 because
+		// PHP 8.0 and later uses libxml versions from 2.9.0, which disabled XXE by default.
+		if ( PHP_VERSION_ID < 80000 && function_exists( 'libxml_disable_entity_loader' ) ) {
 			libxml_disable_entity_loader( $disable );
 		}
 	}
@@ -873,7 +897,7 @@ class ET_Core_Data_Utils {
 
 	/**
 	 * Returns a string with a valid CSS property value.
-	 * 
+	 *
 	 * With some locales (ex: ro_RO) the decimal point can be ',' (comma) and
 	 * we need to convert that to a '.' (period) decimal point to ensure that
 	 * the value is a valid CSS property value.
@@ -884,7 +908,7 @@ class ET_Core_Data_Utils {
 	 *
 	 * @return string
 	 */
-	public function to_css_decimal( $float ) {	
+	public function to_css_decimal( $float ) {
 		return strtr( $float, ',', '.' );
 	}
 

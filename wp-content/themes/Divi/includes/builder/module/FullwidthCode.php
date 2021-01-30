@@ -10,7 +10,7 @@ class ET_Builder_Module_Fullwidth_Code extends ET_Builder_Module {
 		$this->use_raw_content = true;
 
 		$this->settings_modal_toggles = array(
-			'general'  => array(
+			'general' => array(
 				'toggles' => array(
 					'main_content' => et_builder_i18n( 'Text' ),
 				),
@@ -62,20 +62,31 @@ class ET_Builder_Module_Fullwidth_Code extends ET_Builder_Module {
 		return $fields;
 	}
 
-	function render( $attrs, $content = null, $render_slug ) {
+	/**
+	 * Renders the module output.
+	 *
+	 * @param  array  $attrs       List of attributes.
+	 * @param  string $content     Content being processed.
+	 * @param  string $render_slug Slug of module that is used for rendering output.
+	 *
+	 * @return string
+	 */
+	public function render( $attrs, $content, $render_slug ) {
 		$multi_view                = et_pb_multi_view_options( $this );
 		$video_background          = $this->video_background();
 		$parallax_image_background = $this->get_parallax_image_background();
 
 		$this->add_classname( $this->get_text_orientation_classname() );
 
-		$raw_content = $multi_view->render_element( array(
-			'tag' => 'div',
-			'content' => '{{raw_content}}',
-			'attrs' => array(
-				'class' => 'et_pb_code_inner',
-			),
-		) );
+		$raw_content = $multi_view->render_element(
+			array(
+				'tag'     => 'div',
+				'content' => '{{raw_content}}',
+				'attrs'   => array(
+					'class' => 'et_pb_code_inner',
+				),
+			)
+		);
 
 		$output = sprintf(
 			'<div%2$s class="%3$s">
@@ -129,4 +140,4 @@ class ET_Builder_Module_Fullwidth_Code extends ET_Builder_Module {
 	}
 }
 
-new ET_Builder_Module_Fullwidth_Code;
+new ET_Builder_Module_Fullwidth_Code();

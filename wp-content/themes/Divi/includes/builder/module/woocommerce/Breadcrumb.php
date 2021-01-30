@@ -101,7 +101,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 				),
 			),
 			'margin_padding' => array(
-				'css'            => array(
+				'css' => array(
 					'margin'    => '%%order_class%% .woocommerce-breadcrumb',
 					'important' => 'all',
 				),
@@ -314,14 +314,19 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 		 * Breadcrumb separator cannot have Multi-view options as it is not enclosed in a HTML tag.
 		 * Element being enclose in a tag is essential for the Multi-view options to work.
 		 */
-		$multi_view_attrs = $multi_view->render_attrs( array(
-			'content' => '{{breadcrumb_home_text}}',
-			'attrs'   => array(
-				'href'                      => '{{breadcrumb_home_url}}',
-				'data-breadcrumb-separator' => '{{breadcrumb_separator}}',
+		$multi_view_attrs = $multi_view->render_attrs(
+			array(
+				'content' => '{{breadcrumb_home_text}}',
+				'attrs'   => array(
+					'href'                      => '{{breadcrumb_home_url}}',
+					'data-breadcrumb-separator' => '{{breadcrumb_separator}}',
+				),
+				'target'  => '%%order_class%% .woocommerce-breadcrumb a:first-child',
 			),
-			'target'  => '%%order_class%% .woocommerce-breadcrumb a:first-child',
-		), false, null, true );
+			false,
+			null,
+			true
+		);
 
 		if ( $multi_view_attrs && is_array( $multi_view_attrs ) ) {
 			$inner_wrapper_attrs = array_merge( $inner_wrapper_attrs, $multi_view_attrs );
@@ -339,7 +344,7 @@ class ET_Builder_Module_Woocommerce_Breadcrumb extends ET_Builder_Module {
 	 *
 	 * @return string
 	 */
-	public function render( $attrs, $content = null, $render_slug ) {
+	public function render( $attrs, $content, $render_slug ) {
 		ET_Builder_Module_Helper_Woocommerce_Modules::process_background_layout_data( $render_slug, $this );
 
 		$this->add_classname( $this->get_text_orientation_classname() );

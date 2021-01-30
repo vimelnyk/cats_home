@@ -209,9 +209,6 @@ class ET_Core_SupportCenter {
 		// Get `et_support_options` settings & set $this->support_user_options
 		$this->support_user_get_options();
 
-		// Set the Site ID data via Elegant Themes API & token
-		$this->maybe_set_site_id();
-
 		// Set the plugins allowlist for Safe Mode
 		$this->set_safe_mode_plugins_allowlist();
 	}
@@ -237,6 +234,9 @@ class ET_Core_SupportCenter {
 		if ( et_core_is_safe_mode_active() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts_styles' ) );
 		}
+
+		// Get Site ID with Elegant Themes API & token (needed in advance for Remote Access).
+		add_action( 'admin_init', array( $this, 'maybe_set_site_id' ) );
 
 		// Add extra User Role capabilities needed for Remote Access to work with 3rd party software
 		add_filter( 'add_et_support_standard_capabilities', array( $this, 'support_user_extra_caps_standard' ), 10, 1 );
@@ -516,14 +516,26 @@ class ET_Core_SupportCenter {
 	/**
 	 * Update the Site ID data via Elegant Themes API
 	 *
+	 * @since ?.?  Early exit if no Site ID, but also no API credentials to use for a request.
 	 * @since 3.20
 	 *
 	 * @return void
 	 */
 	public function maybe_set_site_id() {
+		// Early exit if the user doesn't have Support Center access.
+		if ( ! $this->current_user_can( 'et_support_center' ) ) {
+			return;
+		}
+
 		$site_id = get_option( 'et_support_site_id' );
 
+		// If we already have a saved Site ID for support, then we don't need to request a new ID.
 		if ( ! empty( $site_id ) ) {
+			return;
+		}
+
+		// If there are no saved API credentials, then we can't use the API to request a Site ID for support.
+		if ( ! $this->get_et_license() ) {
 			return;
 		}
 
@@ -1279,6 +1291,29 @@ class ET_Core_SupportCenter {
 			return $log;
 		}
 
+		/**
+		 * At this point, we know:
+		 * (1) `$wp_debug_log_path` is set,
+		 * (2) it points to a valid location, and
+		 * (3) what it points to is readable.
+		 *
+		 * Before we continue, we'll ensure `$wp_debug_log_path` does not point to a directory.
+		 */
+
+		// Early exit: debug log definition points to a directory, not a file.
+		if ( is_dir( $wp_debug_log_path ) ) {
+			$log['error'] = esc_attr__(
+				'Divi Support Center :: WordPress debug log setting points to a directory, but should point to a file.',
+				'et-core'
+			);
+
+			if ( defined( 'ET_DEBUG' ) ) {
+				et_error( $log['error'] );
+			}
+
+			return $log;
+		}
+
 		// Load the debug.log file
 		$file = new SplFileObject( $wp_debug_log_path );
 
@@ -1290,7 +1325,7 @@ class ET_Core_SupportCenter {
 		if ( $lines_to_return > 0 ) {
 			$file->seek( PHP_INT_MAX );
 			$total_lines = $file->key();
-			// If the file is smaller than the number of lines requested, return the entire file
+			// If the file is smaller than the number of lines requested, return the entire file.
 			$reader         = new LimitIterator( $file, max( 0, $total_lines - $lines_to_return ) );
 			$log['entries'] = '';
 			foreach ( $reader as $line ) {
@@ -3238,8 +3273,8 @@ class ET_Core_SupportCenter {
 					'tooltip' => esc_html__( 'Every website needs backups! Each of our hosting partners provide automatic daily backups. If disaster strikes, these hosting companies have your back.', 'et-core' ),
 				),
 				'migrate'  => array(
-					'title'   => esc_html__( 'Free Site Migration', 'et-core' ),
-					'tooltip' => esc_html__( "Already have a Divi website hosted somewhere else? All of our hosting partners provide free assisted migration. It's easy to switch to Divi Hosting.", 'et-core' ),
+					'title'   => esc_html__( 'Easy Site Migration', 'et-core' ),
+					'tooltip' => esc_html__( "Already have a Divi website hosted somewhere else? All of our hosting partners provide migration tools or professional assisted migration. It's easy to switch to Divi Hosting!", 'et-core' ),
 				),
 				'staging'  => array(
 					'title'   => esc_html__( 'Easy Staging Sites', 'et-core' ),
