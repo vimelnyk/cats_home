@@ -218,10 +218,11 @@ class ET_Builder_Module_Woocommerce_Tabs extends ET_Builder_Module_Tabs {
 				$index ++;
 
 				$nav .= sprintf(
-					'<li class="%3$s%1$s"><a href="#">%2$s</a></li>',
+					'<li class="%3$s%1$s"><a href="#tab-%4$s">%2$s</a></li>',
 					( 1 === $index ? ' et_pb_tab_active' : '' ),
 					esc_html( $tab['title'] ),
-					sprintf( '%1$s_tab', esc_attr( $name ) )
+					sprintf( '%1$s_tab', esc_attr( $name ) ),
+					esc_attr( $name )
 				);
 			}
 		}
@@ -333,7 +334,7 @@ class ET_Builder_Module_Woocommerce_Tabs extends ET_Builder_Module_Tabs {
 
 		if ( $is_tb ) {
 			et_theme_builder_wc_set_global_objects();
-		} else if ( $overwrite_global ) {
+		} elseif ( $overwrite_global ) {
 			// Save current global variable for later reset.
 			$original_product  = $product;
 			$original_post     = $post;
@@ -387,6 +388,11 @@ class ET_Builder_Module_Woocommerce_Tabs extends ET_Builder_Module_Tabs {
 					}
 				}
 			} else {
+				// Skip if the 'callback' key does not exist.
+				if ( ! isset( $tab['callback'] ) ) {
+					continue;
+				}
+
 				// Get tab value based on defined product tab's callback attribute.
 				ob_start();
 				// @phpcs:ignore Generic.PHP.ForbiddenFunctions.Found
@@ -405,7 +411,7 @@ class ET_Builder_Module_Woocommerce_Tabs extends ET_Builder_Module_Tabs {
 		// Reset overwritten global variable.
 		if ( $is_tb ) {
 			et_theme_builder_wc_reset_global_objects();
-		} else if ( $overwrite_global ) {
+		} elseif ( $overwrite_global ) {
 			$product  = $original_product;
 			$post     = $original_post;
 			$wp_query = $original_wp_query;
@@ -427,12 +433,14 @@ class ET_Builder_Module_Woocommerce_Tabs extends ET_Builder_Module_Tabs {
 	public function get_multi_view_attrs() {
 		$multi_view = et_pb_multi_view_options( $this );
 
-		$multi_view_attrs = $multi_view->render_attrs( array(
-			'attrs'  => array(
-				'data-include_tabs' => '{{include_tabs}}',
-			),
-			'target' => '%%order_class%%',
-		) );
+		$multi_view_attrs = $multi_view->render_attrs(
+			array(
+				'attrs'  => array(
+					'data-include_tabs' => '{{include_tabs}}',
+				),
+				'target' => '%%order_class%%',
+			)
+		);
 
 		return $multi_view_attrs;
 	}
