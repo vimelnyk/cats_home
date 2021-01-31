@@ -18,14 +18,10 @@ if ( et_builder_is_product_tour_enabled() || is_page_template( 'page-template-bl
 	 */
 	do_action( 'et_before_main_content' );
 	?>
-
-
-	<section class="vm-breadcrumbs">
+<?php if ( !is_front_page() &&  function_exists('yoast_breadcrumb')): ?>
+	<section class="breadcrumbs-vm">
 		<div class="et_pb_row">
-		<?php
-			if ( function_exists('yoast_breadcrumb') ) {
-			yoast_breadcrumb( '<p id="breadcrumbs">','</p>' );
-			}
-			?>
+    		<?php yoast_breadcrumb( '<p id="breadcrumbs">','</p>' ); ?>
 		</div>
 	</section>
+<?php endif; ?>
